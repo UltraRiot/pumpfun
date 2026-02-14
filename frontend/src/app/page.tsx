@@ -1,11 +1,13 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useTokenAnalysis } from '@/hooks/useApiCall'
 import TokenSearchForm from '@/components/TokenSearchForm'
 import TrustScoreDisplay from '@/components/TrustScoreDisplay'
 
 export default function Home() {
+  const pathname = usePathname()
   const { data: trustData, error, loading, analyzeToken } = useTokenAnalysis()
 
   const handleTokenAnalysis = async (tokenAddress: string) => {
@@ -24,6 +26,11 @@ export default function Home() {
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 w-full text-center">
             <Link
               href="/"
+              onClick={(e) => {
+                if (pathname === '/') {
+                  e.preventDefault()
+                }
+              }}
               className="inline-flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-green-500/50 rounded-lg"
               aria-label="Go to home page"
             >
