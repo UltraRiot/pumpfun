@@ -34,7 +34,7 @@ export const useApiCall = <T>() => {
 
 // Custom hook specifically for token analysis
 export const useTokenAnalysis = () => {
-  const { data, error, loading, execute } = useApiCall<any>();
+  const { data, error, loading, execute } = useApiCall<Record<string, unknown>>();
 
   const analyzeToken = useCallback(
     async (tokenAddress: string) => {

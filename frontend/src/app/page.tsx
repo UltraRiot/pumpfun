@@ -10,7 +10,7 @@ export default function Home() {
   const handleTokenAnalysis = async (tokenAddress: string) => {
     try {
       await analyzeToken(tokenAddress)
-    } catch (err) {
+    } catch {
       // Error is handled by the hook
     }
   }

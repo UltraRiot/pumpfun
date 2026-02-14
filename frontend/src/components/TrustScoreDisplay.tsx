@@ -2,15 +2,38 @@
 
 import { 
   getScoreColor, 
-  getRiskColor, 
-  formatCurrency, 
-  formatPercentage, 
-  getSocialScoreColor, 
-  getBooleanColor 
+  getRiskColor
 } from '@/utils/colorUtils'
 
 interface TrustScoreDisplayProps {
-  data: any
+  data: {
+    [key: string]: unknown
+    error?: string
+    message?: string
+    trustScore?: number
+    riskLevel?: string
+    visualIndicator?: string
+    indicatorColor?: string
+    rugProbability?: string
+    rugLevel?: string
+    keyThreats?: string[]
+    positiveSignals?: string[]
+    traderNote?: string
+    timestamp?: string
+    freshWalletBuys?: number
+    sameDeployerCount?: number
+    rugCreatorRisk?: boolean
+    botActivity?: boolean
+    dumpRisk?: string
+    buyPressure?: string
+    _isError?: boolean
+    _errorMessage?: string
+    holderContext?: {
+      top3ExcludingLpPercent?: number
+      lpLikeHolderPercent?: number
+      offCurveExcludedCount?: number
+    }
+  }
 }
 
 export default function TrustScoreDisplay({ data }: TrustScoreDisplayProps) {
@@ -51,6 +74,9 @@ export default function TrustScoreDisplay({ data }: TrustScoreDisplayProps) {
     data.buyPressure === 'WEAK'
 
   const signal = String(data.visualIndicator || '').toUpperCase()
+  const trustScoreValue = Number(data.trustScore ?? 0)
+  const riskLevelValue = String(data.riskLevel ?? 'MEDIUM')
+  const analyzedAtValue = String(data.timestamp ?? new Date().toISOString())
   const signalHelper =
     signal === 'RUN'
       ? {
@@ -96,14 +122,14 @@ export default function TrustScoreDisplay({ data }: TrustScoreDisplayProps) {
       <div className="text-center mb-8">
         <div className="inline-flex items-center space-x-4">
           <div className="text-center">
-            <div className={`text-6xl font-bold ${getScoreColor(data.trustScore)}`}>
-              {data.trustScore}
+            <div className={`text-6xl font-bold ${getScoreColor(trustScoreValue)}`}>
+              {trustScoreValue}
             </div>
             <div className="text-gray-400 text-sm">Trust Score</div>
           </div>
           
-          <div className={`px-4 py-2 rounded-lg border ${getRiskColor(data.riskLevel)}`}>
-            <div className="font-semibold">{data.riskLevel} RISK</div>
+          <div className={`px-4 py-2 rounded-lg border ${getRiskColor(riskLevelValue)}`}>
+            <div className="font-semibold">{riskLevelValue} RISK</div>
           </div>
         </div>
       </div>
@@ -310,7 +336,7 @@ export default function TrustScoreDisplay({ data }: TrustScoreDisplayProps) {
 
       {/* Timestamp */}
       <div className="text-center text-gray-500 text-sm">
-        Analyzed at {new Date(data.timestamp).toLocaleString()}
+        Analyzed at {new Date(analyzedAtValue).toLocaleString()}
       </div>
     </div>
   )
