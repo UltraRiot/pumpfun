@@ -50,6 +50,28 @@ export default function TrustScoreDisplay({ data }: TrustScoreDisplayProps) {
     data.dumpRisk === 'HIGH' ||
     data.buyPressure === 'WEAK'
 
+  const signal = String(data.visualIndicator || '').toUpperCase()
+  const signalHelper =
+    signal === 'RUN'
+      ? {
+          title: 'RUN',
+          text: 'Higher-confidence momentum setup. Still volatile — use position sizing and exits.',
+          className: 'text-green-300 border-green-500/40 bg-green-900/20',
+        }
+      : signal === 'RESEARCH'
+      ? {
+          title: 'RESEARCH',
+          text: 'Mixed signals. Do more checks (holders, liquidity, volume trend, and social quality) before entry.',
+          className: 'text-yellow-300 border-yellow-500/40 bg-yellow-900/20',
+        }
+      : signal === 'AVOID'
+      ? {
+          title: 'AVOID',
+          text: 'Elevated risk profile detected. Capital preservation is prioritized over chasing entries.',
+          className: 'text-red-300 border-red-500/40 bg-red-900/20',
+        }
+      : null
+
   return (
     <div className="bg-gray-900/40 backdrop-blur-sm border border-gray-700 rounded-xl p-8 max-w-4xl mx-auto">
       {/* Compact AI signal banner (avoid duplicate rug-risk panels) */}
@@ -62,6 +84,12 @@ export default function TrustScoreDisplay({ data }: TrustScoreDisplayProps) {
               Signal: {data.visualIndicator}
             </span>
           </div>
+          {signalHelper && (
+            <div className={`mt-3 inline-block max-w-2xl rounded-lg border px-4 py-2 text-sm ${signalHelper.className}`}>
+              <span className="font-bold mr-1">{signalHelper.title}:</span>
+              <span>{signalHelper.text}</span>
+            </div>
+          )}
         </div>
       )}
       {/* Trust Score Header */}

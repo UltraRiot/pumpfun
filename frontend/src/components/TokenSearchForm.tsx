@@ -47,27 +47,6 @@ export default function TokenSearchForm({ onSubmit, loading }: TokenSearchFormPr
           )}
         </button>
       </div>
-      
-      {/* Quick examples */}
-      <div className="mt-4 text-center">
-        <p className="text-gray-500 text-sm mb-2">Try these examples:</p>
-        <div className="flex flex-wrap justify-center gap-2">
-          {[
-            'So11111111111111111111111111111111111111112', // SOL
-            'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC
-          ].map((address) => (
-            <button
-              key={address}
-              onClick={() => setTokenAddress(address)}
-              className="px-3 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 
-                         rounded-full transition-colors duration-200"
-              disabled={loading}
-            >
-              {address.slice(0, 8)}...{address.slice(-8)}
-            </button>
-          ))}
-        </div>
-      </div>
     </form>
   )
 }

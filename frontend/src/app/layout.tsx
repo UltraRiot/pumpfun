@@ -5,8 +5,13 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'PumpFun Scanner - Trust Score Analyzer',
+  title: 'PumpScanner(beta)',
   description: 'Analyze pump.fun tokens with AI-powered trust scoring',
+  icons: {
+    icon: '/pumpscanner.png',
+    shortcut: '/pumpscanner.png',
+    apple: '/pumpscanner.png',
+  },
 }
 
 export default function RootLayout({
