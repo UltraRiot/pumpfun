@@ -39,16 +39,23 @@ export const useTokenAnalysis = () => {
 
   const analyzeToken = useCallback(
     async (tokenAddress: string) => {
-      if (!tokenAddress.trim()) {
-        throw new Error("Please enter a valid token address");
-      }
-
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiUrl) {
-        throw new Error("API URL not configured");
-      }
-
       return execute(async () => {
+        if (!tokenAddress.trim()) {
+          throw new Error("Please enter a valid token address");
+        }
+
+        const apiUrl =
+          process.env.NEXT_PUBLIC_API_URL ||
+          (process.env.NODE_ENV !== "production"
+            ? "http://127.0.0.1:5001"
+            : "");
+
+        if (!apiUrl) {
+          throw new Error(
+            "API URL not configured. Set NEXT_PUBLIC_API_URL in frontend/.env.local",
+          );
+        }
+
         const response = await fetch(
           `${apiUrl}/api/trust-score/${tokenAddress}`,
         );

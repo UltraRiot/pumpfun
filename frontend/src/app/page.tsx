@@ -1,5 +1,6 @@
 'use client'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useTokenAnalysis } from '@/hooks/useApiCall'
 import TokenSearchForm from '@/components/TokenSearchForm'
 import TrustScoreDisplay from '@/components/TrustScoreDisplay'
@@ -20,19 +21,25 @@ export default function Home() {
       <div className="w-full max-w-4xl mx-auto text-center space-y-8">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 w-full flex items-center justify-center text-center gap-2">
-            <Image
-              src="/pumpscanner.png"
-              alt="PumpScanner logo"
-              width={1024}
-              height={1024}
-              className="w-24 h-24 md:w-28 md:h-28 object-contain drop-shadow-[0_0_14px_rgba(34,197,94,0.25)]"
-              priority
-            />
-            <span>
-              <span className="text-green-400">Pump</span>
-              <span className="text-white">Scanner(beta)</span>
-            </span>
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 w-full text-center">
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-green-500/50 rounded-lg"
+              aria-label="Go to home page"
+            >
+              <Image
+                src="/pumpscanner.png"
+                alt="PumpScanner logo"
+                width={1024}
+                height={1024}
+                className="w-24 h-24 md:w-28 md:h-28 object-contain drop-shadow-[0_0_14px_rgba(34,197,94,0.25)]"
+                priority
+              />
+              <span>
+                <span className="text-green-400">Pump</span>
+                <span className="text-white">Scanner(beta)</span>
+              </span>
+            </Link>
           </h1>
           <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto">
             Analyze pump.fun tokens with AI-powered trust scoring
