@@ -15,6 +15,8 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+const HOST = process.env.HOST || "0.0.0.0";
+const LOG_HOST = HOST === "0.0.0.0" ? "127.0.0.1" : HOST;
 let isShuttingDown = false;
 app.locals.isReady = false;
 
@@ -82,20 +84,20 @@ async function startServer() {
     const connected = await solanaService.testConnection();
     app.locals.isReady = connected === true;
 
-    const server = app.listen(PORT, "127.0.0.1", () => {
+    const server = app.listen(PORT, HOST, () => {
       console.log(`🚀 PumpFun Scanner API running on port ${PORT}`);
-      console.log(`📊 Health check: http://127.0.0.1:${PORT}/health`);
-      console.log(`🫀 Liveness: http://127.0.0.1:${PORT}/live`);
-      console.log(`✅ Readiness: http://127.0.0.1:${PORT}/ready`);
-      console.log(`📈 Metrics: http://127.0.0.1:${PORT}/metrics`);
+      console.log(`📊 Health check: http://${LOG_HOST}:${PORT}/health`);
+      console.log(`🫀 Liveness: http://${LOG_HOST}:${PORT}/live`);
+      console.log(`✅ Readiness: http://${LOG_HOST}:${PORT}/ready`);
+      console.log(`📈 Metrics: http://${LOG_HOST}:${PORT}/metrics`);
       console.log(
-        `🔌 Test connection: http://127.0.0.1:${PORT}/api/test-connection`,
+        `🔌 Test connection: http://${LOG_HOST}:${PORT}/api/test-connection`,
       );
     });
 
     server.on("error", (error) => {
       if (error?.code === "EADDRINUSE") {
-        console.error(`❌ Port ${PORT} is already in use (127.0.0.1:${PORT}).`);
+        console.error(`❌ Port ${PORT} is already in use (${HOST}:${PORT}).`);
         console.error(
           "👉 Stop the existing process using this port, or set a different PORT in backend/.env",
         );
