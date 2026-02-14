@@ -1,0 +1,35 @@
+{
+  "name": "pumpfun-backend",
+  "version": "1.0.0",
+  "description": "PumpFun coin scanner backend",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "check": "node --check src/index.js && node --check src/routes/api.js && node --check src/services/aiAnalysisService.js && node --check src/services/dataFetcher.js && node --check src/services/solanaService.js",
+    "test:coins": "node test_multi_coin_validation.js"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.87.6",
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "node-cron": "^3.0.3",
+    "node-fetch": "^3.3.2",
+    "openai": "^6.21.0",
+    "pg": "^8.11.3",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": [
+    "solana",
+    "pumpfun",
+    "scanner"
+  ],
+  "author": "",
+  "license": "ISC"
+}
