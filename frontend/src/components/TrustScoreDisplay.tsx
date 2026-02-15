@@ -238,7 +238,7 @@ export default function TrustScoreDisplay({ data }: TrustScoreDisplayProps) {
                 </div>
                 
                 <div className={`px-6 py-3 rounded-xl border-2 ${
-                  data.rugLevel === 'HIGH' 
+                  data.rugLevel === 'VERY HIGH' || data.rugLevel === 'HIGH'
                     ? 'bg-red-900/60 border-red-400 text-red-100'
                     : data.rugLevel === 'MEDIUM'
                     ? 'bg-orange-900/60 border-orange-400 text-orange-100'

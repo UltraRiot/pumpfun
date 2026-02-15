@@ -196,7 +196,11 @@ TRADER_NOTE:
         sections.keyThreats.length === 1 &&
         sections.keyThreats[0] ===
           "No material threat signals detected from available data";
-      if (hasOnlyNoThreatFlag && sections.rugLevel !== "LOW") {
+      const lowTierRugLevels = ["VERY LOW", "LOW"];
+      if (
+        hasOnlyNoThreatFlag &&
+        !lowTierRugLevels.includes(sections.rugLevel)
+      ) {
         sections.keyThreats = [
           "No material threat signals detected from available data",
           "Market-structure risk remains elevated (liquidity/volatility conditions)",
@@ -210,14 +214,14 @@ TRADER_NOTE:
       );
 
       // Set visual indicator based on rug level
-      if (sections.rugLevel === "LOW") {
-        sections.visualIndicator = "RESEARCH";
+      if (["VERY LOW", "LOW"].includes(sections.rugLevel)) {
+        sections.visualIndicator = "RUN";
         sections.indicatorColor = "#00FF00";
       } else if (sections.rugLevel === "MEDIUM") {
-        sections.visualIndicator = "CAUTION";
+        sections.visualIndicator = "RESEARCH";
         sections.indicatorColor = "#FFA500";
       } else {
-        sections.visualIndicator = "RUN";
+        sections.visualIndicator = "AVOID";
         sections.indicatorColor = "#FF0000";
       }
     } catch (error) {
@@ -390,11 +394,11 @@ TRADER_NOTE:
   }
 
   _buildDeterministicRugSignal(tokenData, trustScore, sections) {
-    let riskPoints = 10;
+    let riskPoints = 6;
 
     // Blend trust score when available
     if (typeof trustScore === "number" && Number.isFinite(trustScore)) {
-      riskPoints += Math.max(0, 100 - trustScore) * 0.5;
+      riskPoints += Math.max(0, 100 - trustScore) * 0.35;
     }
 
     const marketCap = Number(tokenData.marketCap || 0);
@@ -414,6 +418,14 @@ TRADER_NOTE:
     if (top3ExLp >= 40) riskPoints += 14;
     else if (top3ExLp >= 25) riskPoints += 8;
 
+    const volume24h = Number(tokenData.volume24h || 0);
+    const turnover = marketCap > 0 ? volume24h / marketCap : 0;
+    if (marketCap > 0) {
+      if (turnover > 0 && turnover < 0.03) riskPoints += 8;
+      else if (turnover >= 0.03 && turnover < 0.08) riskPoints += 4;
+      else if (turnover >= 0.2) riskPoints -= 3;
+    }
+
     if (tokenData.hasActiveMintAuthority === true) riskPoints += 15;
     if (Number(tokenData.sameDeployerCount || 0) > 1) riskPoints += 8;
     if (Number(tokenData.freshWalletBuys || 0) >= 25) riskPoints += 8;
@@ -423,17 +435,51 @@ TRADER_NOTE:
       sections.keyThreats[0] ===
         "No material threat signals detected from available data";
     if (onlyNoThreatFlag) {
-      riskPoints = Math.min(riskPoints, 55);
+      // Keep non-zero risk for meme tokens, but avoid inflated values for clean setups
+      riskPoints = Math.min(riskPoints, 35);
+
+      const top3Users = Number(tokenData.top3ExcludingLpPercent || 0);
+      const mintAuthorityDisabled = tokenData.hasActiveMintAuthority === false;
+      const strongStructure = top3Users > 0 && top3Users <= 15;
+      const healthyTurnover = turnover >= 0.08;
+      const strongTrust =
+        typeof trustScore === "number" && Number.isFinite(trustScore)
+          ? trustScore >= 80
+          : false;
+
+      if (
+        mintAuthorityDisabled &&
+        strongStructure &&
+        healthyTurnover &&
+        strongTrust
+      ) {
+        riskPoints = Math.min(riskPoints, 22);
+      }
+    }
+
+    // Simple trust/rug consistency floors
+    if (typeof trustScore === "number" && Number.isFinite(trustScore)) {
+      if (trustScore <= 25) riskPoints = Math.max(riskPoints, 71);
+      else if (trustScore <= 40) riskPoints = Math.max(riskPoints, 41);
+      else if (trustScore <= 55) riskPoints = Math.max(riskPoints, 21);
     }
 
     const finalProb = Math.max(5, Math.min(95, Math.round(riskPoints)));
-    const rugLevel =
-      finalProb >= 65 ? "HIGH" : finalProb >= 35 ? "MEDIUM" : "LOW";
+    const rugLevel = this._mapRugLevelFromProbability(finalProb);
 
     return {
       rugProbability: `${finalProb}%`,
       rugLevel,
     };
+  }
+
+  _mapRugLevelFromProbability(probability) {
+    const p = Number(probability || 0);
+    if (p <= 10) return "VERY LOW";
+    if (p <= 20) return "LOW";
+    if (p <= 40) return "MEDIUM";
+    if (p <= 70) return "HIGH";
+    return "VERY HIGH";
   }
 
   _buildDeterministicTraderNote(tokenData, sections) {

@@ -6,7 +6,6 @@ class TrustScorer {
   // Enhanced trust score calculation with pump.fun data (0-150)
   calculateTrustScore(tokenData) {
     let score = 30; // Base score for new tokens
-
     // Liquidity analysis (35 points max)
     if (tokenData.liquidity) {
       if (tokenData.liquidity > 50000) score += 35;
@@ -70,7 +69,8 @@ class TrustScorer {
 
     // Enhanced social media presence with mention velocity (30 points max) - UPDATED
     if (tokenData.socialScore !== undefined) {
-      score += Math.floor(tokenData.socialScore * 0.3); // Base social score (0-30 points)
+      const clampedSocial = Math.max(0, Math.min(100, tokenData.socialScore));
+      score += Math.floor(clampedSocial * 0.3); // Base social score (0-30 points)
     }
 
     // Social mention velocity assessment (20 points max) - NEW
@@ -112,15 +112,22 @@ class TrustScorer {
         score += 10;
     }
 
-    // Volume activity (20 points max)
+    // Volume activity + turnover quality
     if (tokenData.volume24h) {
       if (tokenData.volume24h > 100000) score += 20;
       else if (tokenData.volume24h > 50000) score += 15;
       else if (tokenData.volume24h > 20000) score += 10;
       else if (tokenData.volume24h > 5000) score += 5;
-      else score -= 5; // Low volume penalty
+      else score -= 5;
+
+      if (tokenData.marketCap && tokenData.marketCap > 0) {
+        const turnover = tokenData.volume24h / tokenData.marketCap;
+        if (turnover < 0.03) score -= 6;
+        else if (turnover < 0.08) score -= 3;
+        else if (turnover > 0.25) score += 4;
+      }
     } else {
-      score -= 10; // No volume data penalty
+      score -= 10;
     }
 
     // Age factor (15 points max) - More realistic for pump.fun
@@ -146,9 +153,9 @@ class TrustScorer {
         score -= 10; // Very volatile - HIGH penalty (reduced)
       else if (tokenData.volatilityScore > 80)
         score -= 3; // Moderate volatility - small penalty (adjusted threshold)
-      else if (tokenData.volatilityScore < 20)
-        score += 10; // Stable price - bonus
-      else if (tokenData.volatilityScore < 10) score += 15; // Very stable - big bonus
+      else if (tokenData.volatilityScore < 10)
+        score += 15; // Very stable
+      else if (tokenData.volatilityScore < 20) score += 10; // Stable price - bonus
 
       console.log(
         `📊 Volatility impact: ${tokenData.volatilityScore}% volatility`,
@@ -187,11 +194,13 @@ class TrustScorer {
       console.log(`🕵️ Creator reputation impact: ${rep.reputationScore} score`);
     }
 
-    // Major red flags (heavy penalties)
-    if (tokenData.topHolderPercent > 70)
-      score -= 30; // Extreme concentration
-    else if (tokenData.topHolderPercent > 50) score -= 20;
-    else if (tokenData.topHolderPercent > 30) score -= 10;
+    // Major red flags (heavy penalties) - skip if distribution analysis already handled concentration
+    if (!tokenData.distributionAnalysis) {
+      if (tokenData.topHolderPercent > 70)
+        score -= 30; // Extreme concentration
+      else if (tokenData.topHolderPercent > 50) score -= 20;
+      else if (tokenData.topHolderPercent > 30) score -= 10;
+    }
 
     // Market cap reality check (adjusted thresholds)
     if (tokenData.marketCap) {
@@ -213,6 +222,18 @@ class TrustScorer {
     // Reduced new token penalties
     if (tokenData.isNewToken) score -= 8; // Reduced from -15
     if (tokenData.hasLowLiquidity) score -= 5; // Reduced from -10
+
+    // Simple hard guardrails for critical red flags
+    const top3Users = Number(tokenData.top3ExcludingLpPercent || 0);
+    const mintAuthorityActive = tokenData.hasActiveMintAuthority === true;
+    const serialDeployer = Number(tokenData.sameDeployerCount || 0) > 1;
+
+    if (mintAuthorityActive && top3Users >= 35) {
+      // Prevent very high trust when core rug controls are weak
+      score = Math.min(score, 72);
+    } else if (mintAuthorityActive && serialDeployer) {
+      score = Math.min(score, 82);
+    }
 
     // Return enhanced score with minimum floor (0-150 range, converted to 0-100 for display)
     const finalScore = Math.max(5, score); // Minimum score of 5 for functioning tokens
